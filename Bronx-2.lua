@@ -1,100 +1,104 @@
---// South Bronx AutoFarm Mod Menu v2
---// Hecho por ChatGPT para ti
-
--- Carga UI Library (Kavo UI)
+-- Carga la librería UI
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
-local Window = Library.CreateLib("South Bronx Mod Menu", "Ocean")
+local Window = Library.CreateLib("South Bronx Mod Menu v3", "Ocean")
 
--- Variables de activación
+-- Variables
 local autofarm_npcs = false
 local autofarm_bank = false
 local autofarm_atm = false
 
--- Funciones de farm
+-- Funciones
 function FarmNPCs()
-    spawn(function()
+    task.spawn(function()
         while autofarm_npcs do
-            for _, npc in ipairs(workspace:GetChildren()) do
+            for _, npc in ipairs(workspace:GetDescendants()) do
                 if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
                     if npc.Humanoid.Health > 0 then
-                        -- Teleportarse al NPC
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
-                        -- Atacar con herramienta
-                        local tool = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Tool")
-                        if tool then
-                            tool:Activate()
+                        local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            hrp.CFrame = npc.HumanoidRootPart.CFrame * CFrame.new(0, 0, 2)
+                            -- Activar herramienta si existe
+                            local tool = game.Players.LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+                            if tool then
+                                tool:Activate()
+                            end
                         end
-                        wait(0.5)
+                        task.wait(0.5)
                     end
                 end
             end
-            wait(1)
+            task.wait(1)
         end
     end)
 end
 
 function FarmBank()
-    spawn(function()
+    task.spawn(function()
         while autofarm_bank do
-            for _, spot in ipairs(workspace:GetDescendants()) do
-                if spot.Name:lower():find("bank") and spot:IsA("Model") then
-                    local prompt = spot:FindFirstChildWhichIsA("ProximityPrompt", true)
-                    if prompt then
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = prompt.Parent.CFrame
-                        fireproximityprompt(prompt)
-                        wait(2)
+            for _, object in ipairs(workspace:GetDescendants()) do
+                if object:IsA("ProximityPrompt") and object.Parent and object.Parent:IsA("BasePart") then
+                    if string.find(object.Parent.Name:lower(), "bank") or string.find(object.Parent.Name:lower(), "vault") then
+                        -- Teletransportar y activar prompt
+                        local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            hrp.CFrame = object.Parent.CFrame + Vector3.new(0,2,0)
+                            fireproximityprompt(object)
+                        end
+                        task.wait(2)
                     end
                 end
             end
-            wait(1)
+            task.wait(1)
         end
     end)
 end
 
 function FarmATM()
-    spawn(function()
+    task.spawn(function()
         while autofarm_atm do
-            for _, atm in ipairs(workspace:GetDescendants()) do
-                if atm.Name:lower():find("atm") and atm:IsA("Model") then
-                    local prompt = atm:FindFirstChildWhichIsA("ProximityPrompt", true)
-                    if prompt then
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = prompt.Parent.CFrame
-                        fireproximityprompt(prompt)
-                        wait(2)
+            for _, object in ipairs(workspace:GetDescendants()) do
+                if object:IsA("ProximityPrompt") and object.Parent and object.Parent:IsA("BasePart") then
+                    if string.find(object.Parent.Name:lower(), "atm") then
+                        -- Teletransportar y activar prompt
+                        local hrp = game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            hrp.CFrame = object.Parent.CFrame + Vector3.new(0,2,0)
+                            fireproximityprompt(object)
+                        end
+                        task.wait(2)
                     end
                 end
             end
-            wait(1)
+            task.wait(1)
         end
     end)
 end
 
--- Crear Tabs y Secciones
-local AutofarmTab = Window:NewTab("AutoFarm")
-local AutofarmSection = AutofarmTab:NewSection("Opciones de Farm")
+-- Tabs
+local tab = Window:NewTab("AutoFarm")
+local section = tab:NewSection("Farm Opciones")
 
-AutofarmSection:NewToggle("Farmear NPCs", "Golpear NPCs automáticamente.", function(state)
-    autofarm_npcs = state
-    if state then
+section:NewToggle("Farmear NPCs", "Ataca NPCs automáticamente", function(value)
+    autofarm_npcs = value
+    if value then
         FarmNPCs()
     end
 end)
 
-AutofarmSection:NewToggle("Robar Bancos", "Robar bancos automáticamente.", function(state)
-    autofarm_bank = state
-    if state then
+section:NewToggle("Robar Bancos", "Roba bancos automáticamente", function(value)
+    autofarm_bank = value
+    if value then
         FarmBank()
     end
 end)
 
-AutofarmSection:NewToggle("Robar Cajeros", "Robar ATMs automáticamente.", function(state)
-    autofarm_atm = state
-    if state then
+section:NewToggle("Robar Cajeros", "Roba cajeros automáticamente", function(value)
+    autofarm_atm = value
+    if value then
         FarmATM()
     end
 end)
 
--- Tab de Información
-local InfoTab = Window:NewTab("Información")
-local InfoSection = InfoTab:NewSection("South Bronx Mod Menu")
-InfoSection:NewLabel("Creado por ChatGPT para tu proyecto.")
+local info = Window:NewTab("Info")
+local info_section = info:NewSection("Hecho para South Bronx v3")
+info_section:NewLabel("Activa cualquier opción y funcionará.")
